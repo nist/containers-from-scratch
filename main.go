@@ -23,7 +23,7 @@ func main() {
 }
 
 func run() {
-	fmt.Printf("Running %v \n", os.Args[2:])
+	fmt.Printf("Running %v as %d\n", os.Args[2:], os.Getpid())
 
 	// cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd := exec.Command("/proc/self/exe", append([]string{"child"}, os.Args[2:]...)...)
@@ -31,8 +31,8 @@ func run() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags:   syscall.CLONE_NEWUTS,
-		 // | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
+		Cloneflags:   syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID,
+		 // | syscall.CLONE_NEWNS,
 	// 	Unshareflags: syscall.CLONE_NEWNS,
 	}
 
@@ -40,7 +40,7 @@ func run() {
 }
 
 func child() {
-	fmt.Printf("Child running %v \n", os.Args[2:])
+	fmt.Printf("Child running %v as %d\n", os.Args[2:], os.Getpid())
 
 	syscall.Sethostname([]byte("container"))
 
