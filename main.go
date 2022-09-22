@@ -42,8 +42,6 @@ func run() {
 func child() {
 	fmt.Printf("Child running %v as %d\n", os.Args[2:], os.Getpid())
 
-	syscall.Sethostname([]byte("container"))
-
 	// cg()
 
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
@@ -51,8 +49,13 @@ func child() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	syscall.Sethostname([]byte("container"))
+
 	// must(syscall.Sethostname([]byte("container")))
-	// must(syscall.Chroot("/home/container"))
+
+	// Create a folder with a minimal *nix filesystem
+	// Used Alpine Linux miniroot
+	must(syscall.Chroot("/home/container"))
 	// must(os.Chdir("/"))
 	// must(syscall.Mount("proc", "proc", "proc", 0, ""))
 	// must(syscall.Mount("thing", "mytemp", "tmpfs", 0, ""))
@@ -68,11 +71,12 @@ func child() {
 func cg() {
 	cgroups := "/sys/fs/cgroup/"
 	pids := filepath.Join(cgroups, "pids")
-	os.Mkdir(filepath.Join(pids, "liz"), 0755)
-	must(ioutil.WriteFile(filepath.Join(pids, "liz/pids.max"), []byte("20"), 0700))
+	// Define a user to assign pids
+	os.Mkdir(filepath.Join(pids, "myuser"), 0755)
+	must(ioutil.WriteFile(filepath.Join(pids, "myuser/pids.max"), []byte("20"), 0700))
 	// Removes the new cgroup in place after the container exits
-	must(ioutil.WriteFile(filepath.Join(pids, "liz/notify_on_release"), []byte("1"), 0700))
-	must(ioutil.WriteFile(filepath.Join(pids, "liz/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
+	must(ioutil.WriteFile(filepath.Join(pids, "myuser/notify_on_release"), []byte("1"), 0700))
+	must(ioutil.WriteFile(filepath.Join(pids, "myuser/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
 }
 
 func must(err error) {
