@@ -53,12 +53,10 @@ func child() {
 	must(syscall.Chroot("/home/myuser/container"))
 	must(os.Chdir("/"))
 	must(syscall.Mount("proc", "proc", "proc", 0, ""))
-	// must(syscall.Mount("thing", "mytemp", "tmpfs", 0, ""))
 
 	must(cmd.Run())
 
 	must(syscall.Unmount("proc", 0))
-	// must(syscall.Unmount("thing", 0))
 }
 
 func cg() {
@@ -68,6 +66,9 @@ func cg() {
 	pids := filepath.Join(cgroups, "pids")
 	// Define a user to assign pids
 	os.Mkdir(filepath.Join(pids, "myuser"), 0755)
+
+	// Limit to 20 processes. To test this limit :() { :|: & };:
+	// aka define a function named ':', call it recusively and put it in bg.
 	must(ioutil.WriteFile(filepath.Join(pids, "myuser/pids.max"), []byte("20"), 0700))
 	// Removes the new cgroup in place after the container exits
 	must(ioutil.WriteFile(filepath.Join(pids, "myuser/notify_on_release"), []byte("1"), 0700))
