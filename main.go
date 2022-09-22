@@ -31,9 +31,7 @@ func run() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags:   syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID,
-		 // | syscall.CLONE_NEWNS,
-	// 	Unshareflags: syscall.CLONE_NEWNS,
+		Cloneflags:   syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS, 	Unshareflags: syscall.CLONE_NEWNS,
 	}
 
 	must(cmd.Run())
@@ -49,22 +47,17 @@ func child() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	syscall.Sethostname([]byte("container"))
-
-	// must(syscall.Sethostname([]byte("container")))
+	must(syscall.Sethostname([]byte("container")))
 
 	// Create a folder with a minimal *nix filesystem
-	// Used Alpine Linux miniroot
-	must(syscall.Chroot("/home/container"))
-	// must(os.Chdir("/"))
-	// must(syscall.Mount("proc", "proc", "proc", 0, ""))
+	must(syscall.Chroot("/home/myuser/container"))
+	must(os.Chdir("/"))
+	must(syscall.Mount("proc", "proc", "proc", 0, ""))
 	// must(syscall.Mount("thing", "mytemp", "tmpfs", 0, ""))
 
-	cmd.Run()
+	must(cmd.Run())
 
-	// must(cmd.Run())
-
-	// must(syscall.Unmount("proc", 0))
+	must(syscall.Unmount("proc", 0))
 	// must(syscall.Unmount("thing", 0))
 }
 
