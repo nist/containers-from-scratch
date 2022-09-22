@@ -40,7 +40,7 @@ func run() {
 func child() {
 	fmt.Printf("Child running %v as %d\n", os.Args[2:], os.Getpid())
 
-	// cg()
+	cg()
 
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd.Stdin = os.Stdin
@@ -62,6 +62,8 @@ func child() {
 }
 
 func cg() {
+	fmt.Printf("Setting control groups\n")
+
 	cgroups := "/sys/fs/cgroup/"
 	pids := filepath.Join(cgroups, "pids")
 	// Define a user to assign pids
